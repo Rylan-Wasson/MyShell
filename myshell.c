@@ -29,12 +29,13 @@ int main () {
  //write your code
  //use getinput and processline as appropriate
   
-  char arr[2][30] = {"test.txt", ""};
   
-  
-  char *temp = arr[0];
-  char **args = &temp;
-  builtIn(args, 2);
+  char **args = malloc(1000);
+  args[0] = "bleb";
+  args[1] = "test.txt";
+  args[2] = "hello.txt";
+
+  builtIn(args, 3);
   return EXIT_SUCCESS;
 }
 
