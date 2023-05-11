@@ -16,7 +16,19 @@
 */
 static int argCount(char*line)
 {
- //write your code
+  int curWord = FALSE; //currently reading a word
+  int count = 0;
+
+  /* Iterate through line */
+  for(int i = 0; i < strlen(line); i++){
+    if(line[i] != ' ' && curWord == FALSE){
+      count++;
+      curWord = TRUE;
+    } else if(line[i] == ' '){
+      curWord = FALSE;
+    }
+  }
+  return count;
 }
 
 
@@ -29,6 +41,32 @@ static int argCount(char*line)
 */
 char** argparse(char* line, int* argcp)
 {
-  //write your code
+  int num_args = argCount(line);
+  *argcp = num_args;
+  char** args = malloc((num_args + 1) * sizeof(char*)); // free me
+  int j = 0; // line index iterator
+
+  // one iteration per arg
+  for(int i = 0; i < num_args; i++){
+    // push j index through leading space
+    while(line[j] == ' '){
+      j++;
+    }
+    char* arg = malloc(strlen(line) +1);
+    int y = 0; // arg index iterator
+    // build arg string
+    while(line[j] != ' ' && line[j] != '\0'){
+      arg[y] = line[j];
+      j++;
+      y++;
+    }
+    arg[y] = '\0';
+
+    //copy arg into args
+    args[i] = malloc(strlen(arg)+1);
+    strcpy(args[i], arg);
+    free(arg);
+  }
+  return args;
 }
 

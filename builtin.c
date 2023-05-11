@@ -28,16 +28,23 @@ static void env(char ** args, int argcp);
  *If none of the built in commands match the wanted command, builtin returns 0;
   */
 int builtIn(char** args, int argcp)
-{
+{ 
+  if(strcmp(args[0], "exit") == 0){
+    exitProgram(args, argcp);
+  } else if(strcmp(args[0], "pwd") == 0){
+    pwd(args, argcp);
+  } else if(strcmp(args[0], "cd") == 0){
+    cd(args, argcp);
+  } else if(strcmp(args[0], "stat") == 0){
     statFind(args, argcp);
-    //pwd(args, argcp);
-    //cd(args, argcp);
-    //pwd(args, argcp);
-    //exitProgram(args, argcp);
-
-    //tail(args, argcp);
-
-    //env(args, argcp);
+  } else if(strcmp(args[0], "tail") == 0){
+    tail(args, argcp);
+  } else if(strcmp(args[0], "env") == 0){
+    env(args, argcp);
+  } else {
+    return 0;
+  }
+  return 1;
 }
 
 static void exitProgram(char** args, int argcp)
@@ -148,6 +155,9 @@ static void tail(char** args, int argcp)
     printf("%s", buf);
   }
 
+  free(fp);
+  free(buf);
+
 }
 
 static void env(char** args, int argcp)
@@ -180,15 +190,18 @@ static void env(char** args, int argcp)
       setenv(name,value,1);
     } else {
       printf("Usage: env [NAME=VALUE]");
+      free(name);
+      free(value);
       exit(-1);
     }
+    free(name);
+    free(value);
   }
   int j = 0;
   while(__environ[j] != NULL){
     printf("%s \n", __environ[j]);
     j++;
   }
-    
 }
 
 

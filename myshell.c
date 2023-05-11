@@ -29,13 +29,23 @@ int main () {
  //write your code
  //use getinput and processline as appropriate
   
+  char* line = "cd ..";
+  processline(line);
   
-  char **args = malloc(1000);
-  args[0] = "bleb";
-  args[1] = "test.txt";
-  args[2] = "hello.txt";
+  line = "pwd";
+  processline(line);
 
-  builtIn(args, 3);
+  line = "cd MyShell";
+  processline(line);
+
+  line = "pwd";
+  processline(line);
+
+  line = " ";
+  processline(line);
+
+  //args[0] = "pwd";
+  //builtIn(args, 1);
   return EXIT_SUCCESS;
 }
 
@@ -52,12 +62,9 @@ int main () {
 * Hint: There is a standard i/o function that can make getinput easier than it sounds.
 */
 ssize_t getinput(char** line, size_t* size) {
-
-  ssize_t len = 0;
+  printf("%s ", "%myshell%");
+  ssize_t len = getline(line, size, stdin);
   
-  
-  //write your code
-
   return len;
 }
 
@@ -71,17 +78,30 @@ ssize_t getinput(char** line, size_t* size) {
  */
 void processline (char *line)
 {
- /*check whether line is empty*/
-  //write your code
+  if (strlen(line) > 0){
+    pid_t cpid;
+    int   status;
+    int argCount;
+    char** arguments = argparse(line, &argCount);
     
-  pid_t cpid;
-  int   status;
-  int argCount;
-  char** arguments = argparse(line, &argCount);
+    /*check whether arguments are builtin commands
+    *if not builtin, fork to execute the command.
+    */
+      //write your code
+
+    if(builtIn(arguments, argCount) == 0){
+      cpid = fork();
+      if(cpid == -1){
+        perror("Error forking");
+      } else if(cpid == 0){
+        execl("/bin/sh", "sh", "-c", line, NULL);
+      } else if(cpid > 0){
+        wait(&status);
+      }
+    }
+    
+  }
+    
   
-  /*check whether arguments are builtin commands
-   *if not builtin, fork to execute the command.
-   */
-    //write your code
 }
 
