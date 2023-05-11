@@ -42,16 +42,32 @@ int builtIn(char** args, int argcp)
   } else if(strcmp(args[0], "env") == 0){
     env(args, argcp);
   } else {
+    for(int i = 0; i < argcp; i++){
+      free(args[i]);
+    }
+    free(args);
     return 0;
   }
+  for(int i = 0; i < argcp; i++){
+      free(args[i]);
+    }
+  free(args);
   return 1;
 }
 
 static void exitProgram(char** args, int argcp)
 {
   if(argcp == 1){
+    for(int i = 0; i < argcp; i++){
+      free(args[i]);
+    }
+    free(args);
     exit(0);
   } else {
+    for(int i = 0; i < argcp; i++){
+      free(args[i]);
+    }
+    free(args);
     int value = atoi(args[1]);
     exit(value);
   }
@@ -61,12 +77,10 @@ static void pwd(char** args, int argpc)
 {
   long size = pathconf(".", _PC_PATH_MAX);
   char *buf = malloc((size_t) size);
-  char *cwd;
-  if(buf != NULL){
-    cwd = getcwd(buf, (size_t)size);
-  }
+  getcwd(buf, (size_t)size);
+  
 
-  printf("%s \n", cwd);
+  printf("%s \n", buf);
   free(buf);
 }
 
@@ -87,8 +101,9 @@ static void cd(char** args, int argcp)
 
 static void statFind(char** args, int argcp)
 {
-  struct stat stats;
+  
   for(int i = 1; i < argcp; i++){
+    struct stat stats;
     if(stat(args[i], &stats) != -1){
       printf("File: %s \n", args[i]);
       printf("Size: %jd \n", stats.st_size);
@@ -114,8 +129,7 @@ static void statFind(char** args, int argcp)
       printf("Gid: %u \n", stats.st_gid);
       printf("Access: %s", ctime(&stats.st_atime));
       printf("Modify: %s", ctime(&stats.st_mtime));
-      printf("Change: %s", ctime(&stats.st_ctime));
-
+      printf("Change: %s \n", ctime(&stats.st_ctime));
     } else {
       perror("Error fetching stats");
     }
@@ -124,40 +138,41 @@ static void statFind(char** args, int argcp)
 
 static void tail(char** args, int argcp)
 {
-  int num_lines = 10;
-  int max_line_length = 4095;
-  int count = 0;
-  char cur;
-  char *buf = malloc(max_line_length);
-  FILE *fp = fopen(args[1], "r");
-  
-  if(fp == NULL){
-    perror("Error opening file");
-    exit(-1);
-  }
-
-  fseek(fp, 0, SEEK_END);
-  // starting at end of file, decrements filepointer until num_lines lines are read
-  while(count < num_lines && ftell(fp) > 0){
-    fseek(fp, -1, SEEK_CUR);
-    cur = fgetc(fp);
-    fseek(fp, -1, SEEK_CUR);
-    if(cur == '\n'){
-      count++;
+  for(int i = 1; i < argcp; i++){
+    int num_lines = 10;
+    int max_line_length = 4095;
+    int count = 0;
+    char cur;
+    char *buf = malloc(max_line_length);
+    FILE *fp = fopen(args[i], "r");
+    
+    if(fp == NULL){
+      perror("Error opening file");
+      exit(-1);
     }
-  }
-  if(ftell(fp) > 0){
-    fseek(fp, 1, SEEK_CUR);
-  }
-  
-  // print remaining lines start at new fp position
-  while(fgets(buf, max_line_length, fp) != NULL){
-    printf("%s", buf);
-  }
 
-  free(fp);
-  free(buf);
-
+    fseek(fp, 0, SEEK_END);
+    // starting at end of file, decrements filepointer until num_lines lines are read
+    while(count < num_lines && ftell(fp) > 0){
+      fseek(fp, -1, SEEK_CUR);
+      cur = fgetc(fp);
+      fseek(fp, -1, SEEK_CUR);
+      if(cur == '\n'){
+        count++;
+      }
+    }
+    if(ftell(fp) > 0){
+      fseek(fp, 1, SEEK_CUR);
+    }
+    
+    // print remaining lines start at new fp position
+    while(fgets(buf, max_line_length, fp) != NULL){
+      printf("%s", buf);
+    }
+    printf("\n \n");
+    free(fp);
+    free(buf);
+  }
 }
 
 static void env(char** args, int argcp)

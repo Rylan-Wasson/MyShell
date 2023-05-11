@@ -26,26 +26,14 @@ ssize_t getinput(char** line, size_t* size);
 
 int main () {
 
- //write your code
- //use getinput and processline as appropriate
+  char* line = NULL;
+  ssize_t size = 0;
+  while(1){
+    getinput(&line, &size);
+    line[size-1] = '\0';
+    processline(line);
+  }
   
-  char* line = "cd ..";
-  processline(line);
-  
-  line = "pwd";
-  processline(line);
-
-  line = "cd MyShell";
-  processline(line);
-
-  line = "pwd";
-  processline(line);
-
-  line = " ";
-  processline(line);
-
-  //args[0] = "pwd";
-  //builtIn(args, 1);
   return EXIT_SUCCESS;
 }
 
@@ -64,6 +52,8 @@ int main () {
 ssize_t getinput(char** line, size_t* size) {
   printf("%s ", "%myshell%");
   ssize_t len = getline(line, size, stdin);
+  *line = realloc(*line, len);
+  *size = strlen(*line);
   
   return len;
 }
@@ -89,19 +79,18 @@ void processline (char *line)
     */
       //write your code
 
-    if(builtIn(arguments, argCount) == 0){
-      cpid = fork();
-      if(cpid == -1){
-        perror("Error forking");
-      } else if(cpid == 0){
-        execl("/bin/sh", "sh", "-c", line, NULL);
-      } else if(cpid > 0){
-        wait(&status);
+    if(argCount > 0){
+      if(builtIn(arguments, argCount) == 0){
+        cpid = fork();
+        if(cpid == -1){
+          perror("Error forking");
+        } else if(cpid == 0){
+          execl("/bin/sh", "sh", "-c", line, NULL);
+        } else if(cpid > 0){
+          wait(&status);
+        }
       }
     }
-    
   }
-    
-  
 }
 

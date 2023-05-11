@@ -67,6 +67,7 @@ char** argparse(char* line, int* argcp)
     strcpy(args[i], arg);
     free(arg);
   }
+  
   return args;
 }
 
