@@ -14,6 +14,9 @@
 #include <dirent.h>
 #include <time.h>
 
+#define NUM_LINES (10)
+#define MAX_LINE_LENGTH (4095);
+
 //Prototypes
 static void exitProgram(char** args, int argcp);
 static void cd(char** args, int argpcp);
@@ -30,17 +33,29 @@ static void env(char ** args, int argcp);
 int builtIn(char** args, int argcp)
 { 
   if(strcmp(args[0], "exit") == 0){
-    exitProgram(args, argcp);
+    if(argcp > 0 && argcp < 3){
+      exitProgram(args, argcp);
+    }
   } else if(strcmp(args[0], "pwd") == 0){
-    pwd(args, argcp);
+    if(argcp == 1){
+      pwd(args, argcp);
+    }
   } else if(strcmp(args[0], "cd") == 0){
-    cd(args, argcp);
+    if(argcp > 0 && argcp < 3){
+      cd(args, argcp);
+    }
   } else if(strcmp(args[0], "stat") == 0){
-    statFind(args, argcp);
+    if(argcp > 1){
+      statFind(args, argcp);
+    }
   } else if(strcmp(args[0], "tail") == 0){
-    tail(args, argcp);
+    if(argcp > 1){
+      tail(args, argcp);
+    }
   } else if(strcmp(args[0], "env") == 0){
-    env(args, argcp);
+    if(argcp > 0 && argcp < 3){
+      env(args, argcp);
+    }
   } else {
     for(int i = 0; i < argcp; i++){
       free(args[i]);
@@ -101,15 +116,13 @@ static void cd(char** args, int argcp)
 
 static void statFind(char** args, int argcp)
 {
-  
+  struct stat stats;
   for(int i = 1; i < argcp; i++){
-    struct stat stats;
     if(stat(args[i], &stats) != -1){
       printf("File: %s \n", args[i]);
-      printf("Size: %jd \n", stats.st_size);
-      printf("Blocks: %jd \n", stats.st_blocks);
-      printf("IO Block: %jd \n", stats.st_blksize);
-      printf("Blocks: %jd \n", stats.st_blocks);
+      printf("Size: %jd   ", stats.st_size);
+      printf("Blocks: %jd   ", stats.st_blocks);
+      printf("IO Block: %jd   ", stats.st_blksize);
 
       printf("File type: ");
       switch (stats.st_mode & __S_IFMT) {
@@ -121,15 +134,15 @@ static void statFind(char** args, int argcp)
           break;
       }
 
-      printf("Device: %lu\n", stats.st_dev);
-      printf("Inode: %jd \n", stats.st_ino);
-      printf("Links: %jd \n", stats.st_nlink);
-      printf("Access: %u \n", stats.st_mode);
-      printf("Uid: %u \n", stats.st_uid);
+      printf("Device: %lu   ", stats.st_dev);
+      printf("Inode: %jd    ", stats.st_ino);
+      printf("Links: %jd    ", stats.st_nlink);
+      printf("Access: %u    ", stats.st_mode);
+      printf("Uid: %u   ", stats.st_uid);
       printf("Gid: %u \n", stats.st_gid);
       printf("Access: %s", ctime(&stats.st_atime));
       printf("Modify: %s", ctime(&stats.st_mtime));
-      printf("Change: %s \n", ctime(&stats.st_ctime));
+      printf("Change: %s", ctime(&stats.st_ctime));
     } else {
       perror("Error fetching stats");
     }
@@ -139,11 +152,11 @@ static void statFind(char** args, int argcp)
 static void tail(char** args, int argcp)
 {
   for(int i = 1; i < argcp; i++){
-    int num_lines = 10;
-    int max_line_length = 4095;
     int count = 0;
     char cur;
-    char *buf = malloc(max_line_length);
+    int length = MAX_LINE_LENGTH;
+    int num_lines = NUM_LINES;
+    char *buf = malloc(length);
     FILE *fp = fopen(args[i], "r");
     
     if(fp == NULL){
@@ -166,7 +179,7 @@ static void tail(char** args, int argcp)
     }
     
     // print remaining lines start at new fp position
-    while(fgets(buf, max_line_length, fp) != NULL){
+    while(fgets(buf, num_lines, fp) != NULL){
       printf("%s", buf);
     }
     printf("\n \n");
@@ -198,16 +211,11 @@ static void env(char** args, int argcp)
       name[equal_location] = '\0';
     
       for(int i = equal_location+1; i < size; i++){ // build value string
-        strncat(value,&(args[1][i]), 1);// this has to be strn cat for some reason?
+        strncat(value,&(args[1][i]), 1);
       }
       value[size] = '\0';
 
       setenv(name,value,1);
-    } else {
-      printf("Usage: env [NAME=VALUE]");
-      free(name);
-      free(value);
-      exit(-1);
     }
     free(name);
     free(value);
